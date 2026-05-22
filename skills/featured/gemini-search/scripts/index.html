@@ -39,8 +39,13 @@ limitations under the License.
           const groundedPrompt = [
             'Answer the exact user question directly using current Google Search grounding.',
             'Preserve the user\'s wording and intent exactly; do not reinterpret the question.',
+            'Prefer official or authoritative sources when available.',
+            'If the user asks to list items, return the complete list, not only a summary.',
+            'If the user asks for names, locations, dates, prices, or other attributes, include those attributes for every listed item when sources provide them.',
+            'Do not say there are N items without listing all N items.',
+            'Use concise bullets for lists.',
             'Lead with the current answer in the first sentence when the question is about current status.',
-            'Then give a short explanation based on grounded search results.',
+            'If the answer cannot be fully determined from grounded sources, say what is missing instead of guessing.',
             '',
             'Exact user question:',
             query,
@@ -49,7 +54,7 @@ limitations under the License.
           const requestBody = {
             contents: [{ role: 'user', parts: [{ text: groundedPrompt }] }],
             tools: [{ googleSearch: {} }],
-            generationConfig: { temperature: 0.2, maxOutputTokens: 768 },
+            generationConfig: { temperature: 0.1, maxOutputTokens: 2048 },
           };
 
           const response = await fetch(url, {
@@ -107,8 +112,7 @@ limitations under the License.
           const presentable = renderedSources ? `${result}\n\nSources:\n${renderedSources}` : result;
 
           return JSON.stringify({
-            result,
-            presentable,
+            result: presentable,
             sources,
           });
         } catch (e) {
